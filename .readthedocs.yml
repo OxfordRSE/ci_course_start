@@ -1,5 +1,12 @@
 version: 2
 
+# Set the OS, Python version and other tools you might need
+build:
+  os: ubuntu-lts-latest
+  tools:
+    python: "3.8"
+
+# Not required but recommended by readthedocs
 python:
    version: 3.8
    install:
