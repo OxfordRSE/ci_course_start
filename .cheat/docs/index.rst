@@ -1,10 +1,8 @@
-.. CI demo documentation master file, created by
-   sphinx-quickstart on Tue Jul 21 17:19:37 2020.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+CI course documentation
+=======================
 
-Welcome to CI demo's documentation!
-===================================
+A small package for summarising experimental measurements, used to
+demonstrate setting up continuous integration for a Python project.
 
 .. toctree::
    :maxdepth: 2
@@ -13,8 +11,6 @@ Welcome to CI demo's documentation!
    install
    quickstart
    reference
-
-
 
 Indices and tables
 ==================

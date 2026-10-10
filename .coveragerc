@@ -1,4 +1,0 @@
-[run]
-source = ci_course
-omit =
-    ci_course/tests/*
