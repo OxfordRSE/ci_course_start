@@ -1,7 +1,7 @@
 # OxRSE Continuous Integration course
 
-This repository contains a small Python package for summarising experimental
-measurements. Over the course you will use free cloud services to automate:
+This repository contains a small Python package for summarising experimental measurements.
+Over the course you will use free cloud services to automate:
 
 - unit testing on multiple Python versions
 - unit testing on multiple operating systems
@@ -23,8 +23,8 @@ tests/
 
 ## Setting up
 
-To make sure all dependencies are installed, we recommend creating a new
-virtual environment. From the directory containing this file:
+To make sure all dependencies are installed, we recommend creating a new virtual environment.
+From the directory containing this file:
 
 ```bash
 python3 -m venv venv
@@ -63,14 +63,13 @@ pip install --upgrade pip setuptools wheel
 pip install -e ".[dev,docs]"
 ```
 
-The `-e` matters: it installs the project in editable mode, so that the
-package you import is the source tree you are editing.
+The `-e` matters: it installs the project in editable mode, so that the package you import is the source tree you are editing.
 
 ## Checking it works
 
 ```bash
-pytest              # run the tests
-ruff check .        # run the linter
+pytest                        # run the tests
+ruff check .                  # run the linter
 ruff check --select D src/    # check the docstrings
-ci-course           # summarise the bundled sample data
+ci-course                     # summarise the bundled sample data
 ```
