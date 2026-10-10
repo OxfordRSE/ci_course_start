@@ -80,3 +80,26 @@ Fix: write the docstring, in the same numpydoc style as the rest of the package.
 
 This is the documentation counterpart to the code coverage stage before it.
 Code coverage asks which lines are hit, this asks which public things are documented, and neither says the thing it measures is any good.
+
+### Reviewing the rendered documentation
+
+The `docs_preview.yml` workflow builds the documentation for a pull request and uploads the generated HTML as a downloadable artifact.
+A successful build makes the rendered pages available for review before merging.
+The reviewer can inspect the explanations, examples and API reference produced by that workflow run.
+
+Once the student repository has a `docs/` tree and the missing docstring is restored, use the preview workflow to review a documentation change.
+Copy `.cheat/.github/workflows/docs_preview.yml` to `.github/workflows/docs_preview.yml` in that repository.
+On a new branch, edit a public function's docstring or the quickstart page and open a pull request against `main`.
+Open the Documentation preview run for that PR and download `documentation-preview` from its summary.
+Extract the archive and open `index.html` in a browser.
+Find the changed text in the rendered page and review its formatting and links before merging.
+
+The workflow runs on pull requests and can also be started manually.
+Sphinx's `-W` option makes the build fail if any warnings occurred.
+The upload step runs after a successful build and fails if no HTML files are found.
+The artifact is retained for seven days and belongs to the workflow run that generated it.
+The workflow needs only read access to repository contents.
+The existing Pages workflow publishes the documentation when the change reaches `main`.
+
+Later, the gated deployment exercise can build the HTML once, upload it, and have a separate deployment job consume that same output after approval.
+This gives artifact transfer between jobs a concrete purpose.
