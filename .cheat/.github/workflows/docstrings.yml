@@ -26,4 +26,4 @@ jobs:
 
       - name: Check every public thing has a docstring
         run: |
-          ruff check --select D1 src/
+          ruff check --select D src/

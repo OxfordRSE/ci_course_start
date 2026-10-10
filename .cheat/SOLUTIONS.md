@@ -82,7 +82,7 @@ Fires on the first CI run, before the tests, because the lint step runs first.
 Fires during the documentation section.
 
 `count_missing` in `src/ci_course/stats.py` is exported, tested, and has no
-docstring. `ruff check --select D1 src/` reports exactly one finding, D103,
+docstring. `ruff check --select D src/` reports exactly one finding, D103,
 naming the function and line.
 
 The point is not the failing check. Sphinx `automodule` only documents members
@@ -103,10 +103,13 @@ Two details that matter if you change the configuration:
 
 - Scope the command to `src/`. Run over the whole repository it reports 18
   findings, because the tests have no docstrings and do not need any.
-- `D1` is the "missing docstring" family, D100 to D107. Selecting all of `D`
-  instead gives 15 findings on this package, almost all of them blank line
-  placement inside docstrings that are perfectly good, which buries the one
-  that matters.
+- Keep `convention = "numpy"` set in `pyproject.toml`. It is what makes the
+  full `D` set usable, by disabling the rules that contradict numpydoc. Without
+  it the same command reports 15 findings here, 14 of them blank line
+  placement in docstrings that are perfectly good.
+- The stage therefore checks both that a docstring exists and that it is
+  shaped like the others. A student who answers the challenge with a one line
+  docstring is told what a numpydoc one needs.
 
 ## 6. Optional: the version matrix and `requires-python`
 

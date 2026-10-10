@@ -71,6 +71,6 @@ package you import is the source tree you are editing.
 ```bash
 pytest              # run the tests
 ruff check .        # run the linter
-ruff check --select D1 src/   # check every public thing has a docstring
+ruff check --select D src/    # check the docstrings
 ci-course           # summarise the bundled sample data
 ```

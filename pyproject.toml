@@ -37,8 +37,10 @@ line-length = 120
 select = ["E", "F", "W", "B"]
 
 # The docstring rules are deliberately not selected here. The Docstrings
-# workflow runs them separately, with "ruff check --select D1 src/", so that
-# missing docstrings are a stage of their own rather than more lint noise.
+# workflow runs them separately, with "ruff check --select D src/", so that
+# documentation is a stage of its own rather than more lint noise. The
+# convention below is what makes the full D set usable: it disables the rules
+# that contradict numpydoc, which is the style this package is written in.
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
