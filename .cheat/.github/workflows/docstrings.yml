@@ -24,6 +24,6 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install .[dev]
 
-      - name: Check docstring coverage
+      - name: Check every public thing has a docstring
         run: |
-          interrogate src/
+          ruff check --select D1 src/

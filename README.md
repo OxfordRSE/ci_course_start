@@ -7,7 +7,7 @@ measurements. Over the course you will use free cloud services to automate:
 - unit testing on multiple operating systems
 - static analysis
 - coverage testing
-- docstring coverage
+- checking that public functions are documented
 - documentation generation and deployment
 
 ## The package
@@ -71,6 +71,6 @@ package you import is the source tree you are editing.
 ```bash
 pytest              # run the tests
 ruff check .        # run the linter
-interrogate src/    # check every public thing has a docstring
+ruff check --select D1 src/   # check every public thing has a docstring
 ci-course           # summarise the bundled sample data
 ```

@@ -40,6 +40,12 @@ destination exists, so `test_replaces_an_existing_report` fails on
 
 Fix: use `os.replace`, which has the POSIX behaviour everywhere.
 
+Do not enable ruff's `PTH` rules on this repository. `PTH104` flags this exact
+line, suggesting `Path.rename()`, which draws attention to the planted bug
+before the matrix stage reaches it and proposes a fix that does not work:
+`Path.rename` wraps `os.rename` and fails on Windows in the same way. The
+working equivalent is `Path.replace`.
+
 This is gated on the operating system rather than the Python version on
 purpose. A failure that needs an old Python disappears when that version
 leaves the matrix, which is how an earlier version of this exercise rotted.
@@ -76,8 +82,8 @@ Fires on the first CI run, before the tests, because the lint step runs first.
 Fires during the documentation section.
 
 `count_missing` in `src/ci_course/stats.py` is exported, tested, and has no
-docstring. `interrogate` reports 92.3 per cent docstring coverage against a
-`fail-under` of 100 and names the function and line it is missing from.
+docstring. `ruff check --select D1 src/` reports exactly one finding, D103,
+naming the function and line.
 
 The point is not the failing check. Sphinx `automodule` only documents members
 that have a docstring, so `count_missing` is silently absent from the generated
@@ -88,10 +94,19 @@ function appears.
 Fix: write the docstring, in the same numpydoc style as the rest of the
 package.
 
-This also gives the course a second kind of coverage to compare against the
-first. Code coverage asks which lines the tests run; docstring coverage asks
-which public things are documented. Neither says the thing it measures is any
-good, which is worth saying out loud twice.
+This is the documentation counterpart to the code coverage stage before it.
+Code coverage asks which lines the tests run, this asks which public things
+are documented, and neither says the thing it measures is any good. Worth
+saying out loud twice.
+
+Two details that matter if you change the configuration:
+
+- Scope the command to `src/`. Run over the whole repository it reports 18
+  findings, because the tests have no docstrings and do not need any.
+- `D1` is the "missing docstring" family, D100 to D107. Selecting all of `D`
+  instead gives 15 findings on this package, almost all of them blank line
+  placement inside docstrings that are perfectly good, which buries the one
+  that matters.
 
 ## 6. Optional: the version matrix and `requires-python`
 

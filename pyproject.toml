@@ -16,7 +16,6 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "interrogate",
     "pytest",
     "pytest-cov",
     "ruff",
@@ -37,13 +36,14 @@ line-length = 120
 [tool.ruff.lint]
 select = ["E", "F", "W", "B"]
 
+# The docstring rules are deliberately not selected here. The Docstrings
+# workflow runs them separately, with "ruff check --select D1 src/", so that
+# missing docstrings are a stage of their own rather than more lint noise.
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
 [tool.coverage.run]
 source = ["ci_course"]
-
-[tool.interrogate]
-fail-under = 100
-exclude = [".cheat", "build", "docs", "tests", "venv"]
-verbose = 2
