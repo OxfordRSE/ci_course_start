@@ -1,105 +1,131 @@
-# Maintainer notes: the planted failures
+# Maintainer notes: exercise sequence
 
-This repository contains deliberate faults.
-Each one is placed to fire at a particular point in the course and teach one thing.
-They are listed here so that a maintainer can find them without reading the whole package.
+These notes give teachers and TAs an overview of the student's progression, the planted faults and their fixes.
+Detailed student instructions, including how to inspect logs, belong in the practical and lecture.
 
-## Maintaining the reference files
+## 1. Lint findings
 
-The workflows and documentation in `.cheat/` are maintained by hand.
-There is currently no automated check that they match the practical instructions.
-When a reference command, job name or dependency changes, check the corresponding practical example for agreement.
-When a planted failure changes, update its description and fix below.
-Keep failure details and solutions in these maintainer notes so that the student README does not reveal the exercises.
+### What a student should observe
 
-## 1. Sample data is not installed with the package
+On the first CI run, lint fails before the tests run:
 
-Fires on the first CI run, on every platform.
+- `src/ci_course/cli.py`: unused `import sys` (F401).
+- `src/ci_course/io.py`: mutable default `errors=[]` (B006).
+- `src/ci_course/io.py`: bare `except` (E722).
 
-`src/ci_course/data/sample_measurements.csv` is not declared as package data, so a non-editable install does not include it.
-The README tells students to install with `pip install -e`, which exposes the source tree, so their tests pass locally.
-The workflow runs `pip install .`, which does not, so five tests fail with a `FileNotFoundError` naming a path inside `site-packages`.
+The shared default list accumulates errors across calls, but the sample data contains no unparseable rows, so the tests miss this bug.
 
-The `src` layout is what makes this work: with a flat layout the source tree would shadow the installed package and the tests would pass in CI too.
+### What a student needs to do to fix it
 
-Fix:
+Remove the unused import and catch parsing errors with `except ValueError:`.
+Give each call its own default error list:
+
+```python
+def load_measurements(path=None, errors=None):
+    if errors is None:
+        errors = []
+```
+
+## 2. Sample data missing from the installed package
+
+### What a student should observe
+
+Once lint passes, five tests fail with `FileNotFoundError` for the sample CSV inside `site-packages`.
+The editable local install passes because it exposes the source data; CI's non-editable install omits it.
+The `src` layout ensures the tests exercise the installed package.
+
+### What a student needs to do to fix it
+
+Include the CSV in the package by adding this to `pyproject.toml`:
 
 ```toml
 [tool.setuptools.package-data]
 ci_course = ["data/*.csv"]
 ```
 
-## 2. Reports cannot be overwritten on Windows
+## 3. Reports cannot be overwritten on Windows
 
-Fires when the matrix is expanded across operating systems.
+### What a student should observe
 
-`write_report` in `src/ci_course/report.py` writes to a temporary file and then calls `os.rename` to move it into place.
-On POSIX that silently replaces any existing file.
-On Windows `os.rename` raises `FileExistsError` if the destination exists, so `test_replaces_an_existing_report` fails on `windows-latest` and passes on Ubuntu and macOS.
+When the OS matrix is introduced, `test_replaces_an_existing_report` fails with `FileExistsError` on Windows but passes on Ubuntu and macOS.
+Native Windows users may already have seen this locally.
+`os.rename` replaces an existing destination on POSIX but fails on Windows.
 
-Fix: use `os.replace`, which has the POSIX behaviour everywhere.
-Or, use Pathlib's `Path.replace`.
+### What a student needs to do to fix it
 
-This is gated on the operating system rather than the Python version on purpose.
-A failure that needs an old Python disappears when that version leaves the matrix, which is how an earlier version of this exercise ceased to exist.
+In `write_report` in `src/ci_course/report.py`, replace `os.rename(tmp, path)` with:
 
-Most students are on macOS or on WSL, so they will meet this in CI rather than locally.
-A student on native Windows will see it on their own machine first.
+```python
+os.replace(tmp, path)
+```
 
-## 3. A column of entirely missing values reports a mean of zero
+Keep this fault tied to the OS so changes to the Python matrix cannot make it disappear.
 
-Fires during the code coverage section.
+## 4. Missing values reported as a mean of zero
 
-`summarise` in `src/ci_course/stats.py` returns zeros when every value is missing.
-No test covers that branch, so coverage points at it, and writing the test to cover it shows the result is wrong: a mean of zero is a measurement claim, not an absence of one.
+### What a student should observe
 
-Fix: return `nan`, or raise.
+Coverage reveals an untested branch in `summarise` in `src/ci_course/stats.py`.
+A test for entirely missing values exposes summary statistics of zero, incorrectly implying measured values exist.
 
-## 4. Three lint findings
+### What a student needs to do to fix it
 
-Fires on the first CI run, before the tests, because the lint step runs first.
-
-- `src/ci_course/cli.py`: `import sys` is unused (F401).
-- `src/ci_course/io.py`: `errors=[]` is a mutable default argument (B006).
-  It accumulates across calls.
-  The sample data contains no unparseable rows, so this never bites in testing: the linter finds a bug the tests cannot.
-- `src/ci_course/io.py`: a bare `except` (E722).
+Add a test for the missing-values case and make the empty-data branch return `nan` for the statistics or raise an appropriate exception.
+Keep `n` as zero if returning a summary.
 
 ## 5. A public function with no docstring
 
-Fires during the documentation section.
+### What a student should observe
 
-`count_missing` in `src/ci_course/stats.py` is exported, tested, and has no docstring.
-`ruff check --select D src/` reports exactly one finding, D103, naming the function and line.
+During the documentation section, `ruff check --select D src/` reports D103 for `count_missing` in `src/ci_course/stats.py`.
+The function is exported and tested but absent from Sphinx's generated API reference.
 
-The point is not the failing check.
-Sphinx `automodule` only documents members that have a docstring, so `count_missing` is silently absent from the generated API reference: a public function that the documentation does not mention, with nothing anywhere to say so.
-Build the docs before and after fixing it and the function appears.
+### What a student needs to do to fix it
 
-Fix: write the docstring, in the same numpydoc style as the rest of the package.
+Add a docstring in the package's numpydoc style and rebuild the documentation to see the function appear.
+Like code coverage, this check establishes completeness without judging quality.
 
-This is the documentation counterpart to the code coverage stage before it.
-Code coverage asks which lines are hit, this asks which public things are documented, and neither says the thing it measures is any good.
+## 6. Documentation previews
 
-### Reviewing the rendered documentation
+### What a student should observe
 
-The `docs_preview.yml` workflow builds the documentation for a pull request and uploads the generated HTML as a downloadable artifact.
-A successful build makes the rendered pages available for review before merging.
-The reviewer can inspect the explanations, examples and API reference produced by that workflow run.
+A successful documentation build does not establish that the rendered text, formatting and links are correct.
+Published Pages documentation reflects `main`, so it does not show proposed PR changes.
 
-Once the student repository has a `docs/` tree and the missing docstring is restored, use the preview workflow to review a documentation change.
-Copy `.cheat/.github/workflows/docs_preview.yml` to `.github/workflows/docs_preview.yml` in that repository.
-On a new branch, edit a public function's docstring or the quickstart page and open a pull request against `main`.
-Open the Documentation preview run for that PR and download `documentation-preview` from its summary.
-Extract the archive and open `index.html` in a browser.
-Find the changed text in the rendered page and review its formatting and links before merging.
+### What a student needs to do to fix it
 
-The workflow runs on pull requests and can also be started manually.
-Sphinx's `-W` option makes the build fail if any warnings occurred.
-The upload step runs after a successful build and fails if no HTML files are found.
-The artifact is retained for seven days and belongs to the workflow run that generated it.
-The workflow needs only read access to repository contents.
-The existing Pages workflow publishes the documentation when the change reaches `main`.
+Use `docs_preview.yml` to upload the PR's rendered Sphinx HTML as `documentation-preview` for review before merging.
+The Pages workflow publishes after merging.
+The later gated deployment exercise reuses built HTML in a separate job after approval.
 
-Later, the gated deployment exercise can build the HTML once, upload it, and have a separate deployment job consume that same output after approval.
-This gives artifact transfer between jobs a concrete purpose.
+## 7. Caching and concurrency
+
+### What a student should observe
+
+Repeated runs download the same dependencies, and successive commits can leave obsolete CI runs active.
+Timing differences will be small here; the practical and lecture should explain that larger downloads or expensive builds can make savings significant.
+
+### What a student needs to do to fix it
+
+Enable pip caching in the `setup-python` step:
+
+```yaml
+cache: pip
+cache-dependency-path: pyproject.toml
+```
+
+Cancel superseded runs with workflow-level concurrency:
+
+```yaml
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+```
+
+The Python versions, Operating systems, Coverage and Docstrings workflows provide the reference examples.
+
+## Maintaining the reference files
+
+The workflows and documentation in `.cheat/` are maintained by hand, with no automated check against the practical.
+When commands, job names, dependencies or faults change, update the matching practical examples and notes here.
+Keep solutions out of the student README.
