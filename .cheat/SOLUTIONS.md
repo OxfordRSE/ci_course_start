@@ -4,8 +4,6 @@ This repository contains deliberate faults.
 Each one is placed to fire at a particular point in the course and teach one thing.
 They are listed here so that a maintainer can find them without reading the whole package.
 
-Nothing in this directory is visible to students working through the course, but it is copied into their repository when they use the template, so do not put anything here that gives the game away in a filename.
-
 ## 1. Sample data is not installed with the package
 
 Fires on the first CI run, on every platform.
@@ -32,12 +30,10 @@ On POSIX that silently replaces any existing file.
 On Windows `os.rename` raises `FileExistsError` if the destination exists, so `test_replaces_an_existing_report` fails on `windows-latest` and passes on Ubuntu and macOS.
 
 Fix: use `os.replace`, which has the POSIX behaviour everywhere.
-
-Do not enable ruff's `PTH` rules on this repository. `PTH104` flags this exact line, suggesting `Path.rename()`, which draws attention to the planted bug before the matrix stage reaches it and proposes a fix that does not work: `Path.rename` wraps `os.rename` and fails on Windows in the same way.
-The working equivalent is `Path.replace`.
+Or, use Pathlib's `Path.replace`.
 
 This is gated on the operating system rather than the Python version on purpose.
-A failure that needs an old Python disappears when that version leaves the matrix, which is how an earlier version of this exercise rotted.
+A failure that needs an old Python disappears when that version leaves the matrix, which is how an earlier version of this exercise ceased to exist.
 
 Most students are on macOS or on WSL, so they will meet this in CI rather than locally.
 A student on native Windows will see it on their own machine first.
@@ -50,9 +46,6 @@ Fires during the code coverage section.
 No test covers that branch, so coverage points at it, and writing the test to cover it shows the result is wrong: a mean of zero is a measurement claim, not an absence of one.
 
 Fix: return `nan`, or raise.
-Worth discussing rather than just patching.
-
-Line 28, the standard deviation of a single value, is also uncovered and is a second, milder, talking point.
 
 ## 4. Three lint findings
 
@@ -77,21 +70,4 @@ Build the docs before and after fixing it and the function appears.
 Fix: write the docstring, in the same numpydoc style as the rest of the package.
 
 This is the documentation counterpart to the code coverage stage before it.
-Code coverage asks which lines the tests run, this asks which public things are documented, and neither says the thing it measures is any good.
-Worth saying out loud twice.
-
-Two details that matter if you change the configuration:
-
-- Scope the command to `src/`.
-  Run over the whole repository it reports 18 findings, because the tests have no docstrings and do not need any.
-- Keep `convention = "numpy"` set in `pyproject.toml`.
-  It is what makes the full `D` set usable, by disabling the rules that contradict numpydoc.
-  Without it the same command reports 15 findings here, 14 of them blank line placement in docstrings that are perfectly good.
-- The stage therefore checks both that a docstring exists and that it is shaped like the others.
-  A student who answers the challenge with a one line docstring is told what a numpydoc one needs.
-
-## 6. Optional: the version matrix and `requires-python`
-
-`pyproject.toml` declares `requires-python = ">=3.12"`.
-Adding 3.11 to the version matrix makes `pip install` refuse the package with a clear error.
-Both halves live in this repository, so this cannot silently start passing, but it does need bumping as supported versions move on.
+Code coverage asks which lines are hit, this asks which public things are documented, and neither says the thing it measures is any good.
