@@ -4,6 +4,14 @@ This repository contains deliberate faults.
 Each one is placed to fire at a particular point in the course and teach one thing.
 They are listed here so that a maintainer can find them without reading the whole package.
 
+## Maintaining the reference files
+
+The workflows and documentation in `.cheat/` are maintained by hand.
+There is currently no automated check that they match the practical instructions.
+When a reference command, job name or dependency changes, check the corresponding practical example for agreement.
+When a planted failure changes, update its description and fix below.
+Keep failure details and solutions in these maintainer notes so that the student README does not reveal the exercises.
+
 ## 1. Sample data is not installed with the package
 
 Fires on the first CI run, on every platform.
@@ -61,7 +69,8 @@ Fires on the first CI run, before the tests, because the lint step runs first.
 
 Fires during the documentation section.
 
-`count_missing` in `src/ci_course/stats.py` is exported, tested, and has no docstring. `ruff check --select D src/` reports exactly one finding, D103, naming the function and line.
+`count_missing` in `src/ci_course/stats.py` is exported, tested, and has no docstring.
+`ruff check --select D src/` reports exactly one finding, D103, naming the function and line.
 
 The point is not the failing check.
 Sphinx `automodule` only documents members that have a docstring, so `count_missing` is silently absent from the generated API reference: a public function that the documentation does not mention, with nothing anywhere to say so.

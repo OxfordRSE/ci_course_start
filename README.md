@@ -23,53 +23,33 @@ tests/
 
 ## Setting up
 
-To make sure all dependencies are installed, we recommend creating a new virtual environment.
-From the directory containing this file:
+You will need Python 3.12 or later.
+From the repository directory, create and activate a virtual environment using the commands for your shell.
+
+| Platform and shell | Create | Activate |
+| :- | :- | :- |
+| Linux / macOS, bash or zsh | `python3 -m venv venv` | `source venv/bin/activate` |
+| Windows, Command Prompt | `python -m venv venv` | `venv\Scripts\activate.bat` |
+| Windows, PowerShell | `python -m venv venv` | `.\venv\Scripts\Activate.ps1` |
+
+Install this project:
 
 ```bash
-python3 -m venv venv
-```
-
-Activate the virtual environment:
-
-Linux / macOS:
-
-```bash
-source venv/bin/activate
-```
-
-Windows cmd.exe:
-
-```bash
-venv\Scripts\activate.bat
-```
-
-Windows PowerShell:
-
-```bash
-venv\Scripts\Activate.ps1
-```
-
-Windows using Git Bash:
-
-```bash
-source venv/Scripts/activate
-```
-
-Upgrade the build tools and install this project:
-
-```bash
-pip install --upgrade pip setuptools wheel
-pip install -e ".[dev,docs]"
+python -m pip install -e ".[dev,docs]"
 ```
 
 The `-e` matters: it installs the project in editable mode, so that the package you import is the source tree you are editing.
 
-## Checking it works
+## Running the package and checks
+
+Try the command line tool and run the checks:
 
 ```bash
-pytest                        # run the tests
-ruff check .                  # run the linter
+ci-course                    # summarise the bundled sample data
+pytest                       # run the tests
+ruff check .                 # run the linter
 ruff check --select D src/    # check the docstrings
-ci-course                     # summarise the bundled sample data
 ```
+
+This repository is the starting point for the practical, so some checks may report problems.
+Follow the practical instructions to investigate the results and improve the project.
