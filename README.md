@@ -7,6 +7,7 @@ measurements. Over the course you will use free cloud services to automate:
 - unit testing on multiple operating systems
 - static analysis
 - coverage testing
+- docstring coverage
 - documentation generation and deployment
 
 ## The package
@@ -68,7 +69,8 @@ package you import is the source tree you are editing.
 ## Checking it works
 
 ```bash
-pytest          # run the tests
-ruff check .    # run the linter
-ci-course       # summarise the bundled sample data
+pytest              # run the tests
+ruff check .        # run the linter
+interrogate src/    # check every public thing has a docstring
+ci-course           # summarise the bundled sample data
 ```

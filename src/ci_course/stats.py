@@ -38,6 +38,11 @@ def summarise(values):
     }
 
 
+def count_missing(values):
+    values = np.asarray(values, dtype=float)
+    return int(np.isnan(values).sum())
+
+
 def summarise_all(measurements):
     """
     Summarise every column in a table of measurements.

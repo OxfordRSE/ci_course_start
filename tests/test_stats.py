@@ -24,3 +24,8 @@ def test_summarises_every_column():
 
     assert set(summaries) == {"temperature_c", "mass_g"}
     assert summaries["temperature_c"]["n"] == 7
+
+
+def test_counts_missing_values():
+    assert ci_course.count_missing(np.array([1.0, np.nan, 3.0, np.nan])) == 2
+    assert ci_course.count_missing(np.array([1.0, 2.0])) == 0

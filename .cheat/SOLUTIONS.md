@@ -71,7 +71,29 @@ Fires on the first CI run, before the tests, because the lint step runs first.
   this never bites in testing: the linter finds a bug the tests cannot.
 - `src/ci_course/io.py`: a bare `except` (E722).
 
-## 5. Optional: the version matrix and `requires-python`
+## 5. A public function with no docstring
+
+Fires during the documentation section.
+
+`count_missing` in `src/ci_course/stats.py` is exported, tested, and has no
+docstring. `interrogate` reports 92.3 per cent docstring coverage against a
+`fail-under` of 100 and names the function and line it is missing from.
+
+The point is not the failing check. Sphinx `automodule` only documents members
+that have a docstring, so `count_missing` is silently absent from the generated
+API reference: a public function that the documentation does not mention, with
+nothing anywhere to say so. Build the docs before and after fixing it and the
+function appears.
+
+Fix: write the docstring, in the same numpydoc style as the rest of the
+package.
+
+This also gives the course a second kind of coverage to compare against the
+first. Code coverage asks which lines the tests run; docstring coverage asks
+which public things are documented. Neither says the thing it measures is any
+good, which is worth saying out loud twice.
+
+## 6. Optional: the version matrix and `requires-python`
 
 `pyproject.toml` declares `requires-python = ">=3.12"`. Adding 3.11 to the
 version matrix makes `pip install` refuse the package with a clear error. Both

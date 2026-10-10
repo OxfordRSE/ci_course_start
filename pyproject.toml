@@ -16,6 +16,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "interrogate",
     "pytest",
     "pytest-cov",
     "ruff",
@@ -41,3 +42,8 @@ testpaths = ["tests"]
 
 [tool.coverage.run]
 source = ["ci_course"]
+
+[tool.interrogate]
+fail-under = 100
+exclude = [".cheat", "build", "docs", "tests", "venv"]
+verbose = 2
