@@ -1,6 +1,26 @@
-functionality module reference
-==============================
+API reference
+=============
 
-.. autofunction:: ci_course.functionality.greet
+Reading data
+------------
 
-.. autofunction:: ci_course.functionality.minimum
+.. automodule:: ci_course.io
+   :members:
+
+Summary statistics
+------------------
+
+.. automodule:: ci_course.stats
+   :members:
+
+Reports
+-------
+
+.. automodule:: ci_course.report
+   :members:
+
+Command line interface
+----------------------
+
+.. automodule:: ci_course.cli
+   :members:
