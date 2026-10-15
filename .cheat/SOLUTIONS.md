@@ -124,6 +124,44 @@ concurrency:
 
 The Python versions, Operating systems, Coverage and Docstrings workflows provide the reference examples.
 
+## 8. Pre-commit
+
+### What a student should observe
+
+Every check so far has only spoken up after a push, so a trivial lint error costs a full round trip through CI.
+Hooks move that feedback to commit time, where it costs seconds.
+
+By this point in the course the three planted lint findings have already been fixed, back in the first exercise.
+A clean tree catches nothing, so the student has to reintroduce a fault to see the hooks work.
+Adding an unused import is enough.
+
+### What a student needs to do to fix it
+
+Create `.pre-commit-config.yaml`, then install the hooks into the local clone:
+
+```bash
+pre-commit install
+```
+
+Reintroduce a lint fault, try to commit it, and watch the commit be refused.
+Fix it and commit again.
+
+Run every hook against the whole repository, which is what CI does:
+
+```bash
+pre-commit run --all-files
+```
+
+The reference configuration pins four whitespace hooks and `ruff-check`.
+`ruff-check` deliberately does not pass `--fix`, so it reports the same findings as the lint job rather than rewriting the code underneath the student.
+
+The reference workflow is `pre_commit.yml`.
+
+Be straight with students that this workflow is close to redundant here, because the Python versions and Operating systems workflows already run `ruff check`.
+It earns its place as a backstop rather than as new coverage: hooks are installed per clone, so anyone who skips `pre-commit install` is unprotected, `git commit --no-verify` bypasses them, and a commit hook only sees the files in that commit while `--all-files` catches drift after a config or hook version change.
+The wider point is the same one branch protection makes: a local convention is not enforcement until something outside the developer's machine checks it.
+The extra practice at reading and writing workflow YAML is itself worth the ten seconds of duplicated linting.
+
 ## Maintaining the reference files
 
 The workflows and documentation in `.cheat/` are maintained by hand, with no automated check against the practical.
