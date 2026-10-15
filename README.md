@@ -45,9 +45,9 @@ The `-e` matters: it installs the project in editable mode, so that the package 
 Try the command line tool and run the checks:
 
 ```bash
-ci-course                    # summarise the bundled sample data
-pytest                       # run the tests
-ruff check .                 # run the linter
+ci-course                     # summarise the bundled sample data
+pytest                        # run the tests
+ruff check .                  # run the linter
 ruff check --select D src/    # check the docstrings
 ```
 
