@@ -216,6 +216,65 @@ A deployment is cancelled part way through at your peril, so this one queues ins
 A tag triggered GitHub Release with generated notes is a reasonable optional extra here.
 It is not in the reference files.
 
+## 11. Supply chain
+
+### What a student should observe
+
+Every workflow they have written pulls in somebody else's code with `uses:`, identified by a tag.
+A tag belongs to the action's author and can be moved to different code at any time, so `@v7` is a promise rather than a fact.
+The Codecov step is the sharp end: it is third-party, and it is the one step that is handed a secret.
+
+Nothing in the course so far has checked any of this, and none of it is visible by reading a green tick.
+
+### What a student needs to do to fix it
+
+Run the auditor and read what it says:
+
+```bash
+pipx run zizmor .github/workflows/
+```
+
+On unconfigured workflows it finds three things, and all three are worth fixing:
+
+- `unpinned-uses`: pin third-party actions to a commit hash, with the tag kept in a trailing comment so it is still readable.
+- `excessive-permissions`: add `permissions: contents: read` to each workflow and widen only where a job needs it, as the deployment workflow does.
+- `artipacked`: add `persist-credentials: false` to `actions/checkout`, which otherwise leaves a usable token in `.git/config` for every later step.
+
+The pin policy lives in `zizmor.yml`: GitHub's own actions may be used by tag, everything else must be hashed.
+That is a deliberate position rather than the strictest one, and it is worth asking students whether they agree with it.
+Applied here it flags exactly one action, `codecov/codecov-action`, which is the right answer.
+
+Add Dependabot for GitHub Actions with a cooldown.
+The cooldown is the interesting part: taking an update the day it ships is its own risk, and a fortnight's delay means somebody else finds the bad release first.
+
+All seven reference workflows have these fixes applied, so `zizmor` reports nothing against `.cheat/`.
+A student's own workflows will not, which is the exercise.
+
+### Notes for maintainers
+
+Dependabot watches GitHub Actions only.
+The Python dependencies are declared without version bounds and there is no lockfile, so Dependabot has nothing to raise for pip.
+If bounds or a lockfile are ever added, revisit that.
+
+The reference `dependabot.yml` says `directory: "/"`, which is correct for a student whose workflows are at `.github/workflows`.
+It is not correct for this repository, where the reference workflows live under `.cheat/`.
+Enabling Dependabot on these files would need `directory: "/.cheat/.github/workflows"`, because the Actions file fetcher scans YAML directly in the configured directory rather than walking down from it.
+
+The audit workflow uses `zizmorcore/zizmor-action`, pinned to a commit like any other third-party action.
+An earlier draft installed `zizmor` from pip in a `run:` step instead, which was a mistake worth not repeating: hash-pinning the actions on one line and then fetching an unpinned package from an index on the next is the hole this whole section is about.
+Using an action also means Dependabot maintains it, which the pip step would not have been, because Dependabot here watches GitHub Actions only.
+
+Both pins matter.
+The action is pinned by commit, and its `version` input pins the auditor the action installs.
+Without `version` the action takes the latest zizmor release, so the workflow would still be running unreviewed code.
+
+The pinned versions are deliberately not the newest.
+zizmor 1.31.0 and zizmor-action v0.7.0 were both released on 2026-10-15; the pins here are the previous pair, v0.6.4 and 1.30.1, which is what the fortnight cooldown recommended two paragraphs earlier actually looks like when you follow it.
+`training-slides-core` pins the same action commit.
+
+`advanced-security: false` with `annotations: true` makes the action annotate the diff and fail, which needs only `contents: read`.
+Set `advanced-security: true` instead to upload results to code scanning, which needs `security-events: write` and `actions: read`.
+
 ## Maintaining the reference files
 
 The workflows and documentation in `.cheat/` are maintained by hand, with no automated check against the practical.
