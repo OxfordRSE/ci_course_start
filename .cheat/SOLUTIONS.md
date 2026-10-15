@@ -85,7 +85,27 @@ The function is exported and tested but absent from Sphinx's generated API refer
 Add a docstring in the package's numpydoc style and rebuild the documentation to see the function appear.
 Like code coverage, this check establishes completeness without judging quality.
 
-## 6. Documentation previews
+## 6. Publishing the documentation
+
+### What a student should observe
+
+The documentation only exists on their own machine.
+Building it proves it compiles, but nobody else can read it.
+
+### What a student needs to do to fix it
+
+Enable Pages in the repository settings, with the source set to GitHub Actions rather than a branch.
+Pages on a free account needs a public repository.
+
+Write a single job workflow that checks out the code, installs `.[docs]`, runs `sphinx-build`, then uses `configure-pages`, `upload-pages-artifact` and `deploy-pages`.
+It needs `pages: write` and `id-token: write`, which is a short lived token for the deployment rather than a secret anyone has to store.
+
+Read the Docs is the more common choice in scientific Python and is worth a mention, but the build happens somewhere the student cannot watch, which is the wrong lesson in a course about seeing your pipeline run.
+
+At this stage the workflow is a single ungated job.
+Section 10 splits it apart.
+
+## 7. Documentation previews
 
 ### What a student should observe
 
@@ -98,7 +118,7 @@ Use `docs_preview.yml` to upload the PR's rendered Sphinx HTML as `documentation
 The Pages workflow publishes after merging.
 The later gated deployment exercise reuses built HTML in a separate job after approval.
 
-## 7. Caching and concurrency
+## 8. Caching and concurrency
 
 ### What a student should observe
 
@@ -124,7 +144,7 @@ concurrency:
 
 The Python versions, Operating systems, Coverage and Docstrings workflows provide the reference examples.
 
-## 8. Pre-commit
+## 9. Pre-commit
 
 ### What a student should observe
 
@@ -161,6 +181,40 @@ Be straight with students that this workflow is close to redundant here, because
 It earns its place as a backstop rather than as new coverage: hooks are installed per clone, so anyone who skips `pre-commit install` is unprotected, `git commit --no-verify` bypasses them, and a commit hook only sees the files in that commit while `--all-files` catches drift after a config or hook version change.
 The wider point is the same one branch protection makes: a local convention is not enforcement until something outside the developer's machine checks it.
 The extra practice at reading and writing workflow YAML is itself worth the ten seconds of duplicated linting.
+
+## 10. Gated deployment
+
+### What a student should observe
+
+The Pages workflow from section 6 publishes whatever lands on `main`.
+It runs no tests, and it builds and publishes in one job, so the thing that goes live was never a reviewable artifact.
+Nobody is asked whether publishing is a good idea.
+
+This is the distinction the lecture draws between Continuous Delivery and Deployment, made concrete.
+Up to now the course has only shown Deployment.
+
+### What a student needs to do to fix it
+
+Split the workflow into three jobs joined by `needs:`: `tests`, then `build-docs`, then `deploy`.
+Deployment now requires both passing tests and a documentation build that survives `-W`.
+
+Build the HTML once in `build-docs` and upload it with `upload-pages-artifact`.
+The `deploy` job has no checkout, no install and no build: it runs `deploy-pages` and nothing else, so what is published is exactly the artifact that was built and reviewed.
+Rebuilding in the deploy job would quietly reintroduce the possibility of publishing something different from what passed.
+
+Add a required reviewer to the `github-pages` environment, under Settings, then Environments.
+This is the part students most often miss: the gate is a repository setting, not a line of YAML.
+The workflow only names the environment, and naming it is what makes the setting apply.
+With a reviewer configured the deploy job sits waiting for approval, and the run shows who approved it.
+
+Keep `permissions: contents: read` at workflow level and widen only inside `deploy`, so nothing before the gate holds a token that can publish.
+
+The concurrency group is worth contrasting with section 8.
+The test workflows cancel superseded runs, because an obsolete test result is worthless.
+A deployment is cancelled part way through at your peril, so this one queues instead, with `cancel-in-progress: false`.
+
+A tag triggered GitHub Release with generated notes is a reasonable optional extra here.
+It is not in the reference files.
 
 ## Maintaining the reference files
 
